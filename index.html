@@ -1,0 +1,1299 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive authentication and session security simulator for 305331/316331 Computer and Information Security.">
+  <title>Authentication &amp; Session Security Simulator — 305331/316331</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #15263a;
+      --ink-soft: #536479;
+      --paper: #f4f1e9;
+      --surface: #fffdf8;
+      --surface-soft: #e8f0ef;
+      --navy: #173f5f;
+      --teal: #0d7770;
+      --teal-dark: #075d58;
+      --amber: #d88a1d;
+      --amber-soft: #fff1d4;
+      --red: #a93939;
+      --red-soft: #fbe8e4;
+      --green: #256d4b;
+      --green-soft: #e2f2e8;
+      --blue-soft: #e5eef6;
+      --border: #c9d2d3;
+      --shadow: 0 18px 48px rgba(23, 63, 95, .11);
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 10px;
+      --max-width: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(13, 119, 112, .12), transparent 28rem),
+        radial-gradient(circle at 100% 18%, rgba(216, 138, 29, .13), transparent 24rem),
+        var(--paper);
+      color: var(--ink);
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", Tahoma, sans-serif;
+      line-height: 1.55;
+    }
+
+    button { font: inherit; }
+    button { touch-action: manipulation; }
+
+    button:focus-visible,
+    summary:focus-visible,
+    a:focus-visible {
+      outline: 3px solid var(--amber);
+      outline-offset: 3px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -5rem;
+      left: 1rem;
+      z-index: 10;
+      padding: .7rem 1rem;
+      border-radius: var(--radius-sm);
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .skip-link:focus { top: 1rem; }
+
+    .shell {
+      width: min(calc(100% - 2rem), var(--max-width));
+      margin: 0 auto;
+    }
+
+    .site-header { padding: 1.25rem 0 1rem; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .course-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+      color: var(--navy);
+      font-size: .82rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .course-mark::before {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      background: var(--teal);
+      content: "";
+      transform: rotate(45deg);
+    }
+
+    .ghost-button, .secondary-button, .primary-button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 999px;
+      padding: .7rem 1.1rem;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform .18s ease, background .18s ease, color .18s ease;
+    }
+
+    .ghost-button {
+      border: 1px solid var(--border);
+      background: rgba(255, 253, 248, .68);
+      color: var(--ink);
+    }
+
+    .secondary-button {
+      border: 1px solid var(--teal);
+      background: transparent;
+      color: var(--teal-dark);
+    }
+
+    .primary-button {
+      background: var(--teal);
+      color: #fff;
+      box-shadow: 0 8px 22px rgba(13, 119, 112, .22);
+    }
+
+    .ghost-button:hover, .secondary-button:hover, .primary-button:hover { transform: translateY(-1px); }
+    .primary-button:hover { background: var(--teal-dark); }
+    .primary-button:disabled, .secondary-button:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+      transform: none;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr);
+      align-items: end;
+      gap: 2rem;
+      padding: 2.1rem clamp(1.25rem, 4vw, 3rem);
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      background: var(--navy);
+      box-shadow: var(--shadow);
+      color: #fff;
+      position: relative;
+    }
+
+    .hero::after {
+      position: absolute;
+      right: -5rem;
+      bottom: -8rem;
+      width: 23rem;
+      height: 23rem;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 50%;
+      box-shadow: 0 0 0 3rem rgba(255,255,255,.04), 0 0 0 7rem rgba(255,255,255,.03);
+      content: "";
+    }
+
+    .eyebrow {
+      margin: 0 0 .65rem;
+      color: #aee2db;
+      font-size: .8rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      max-width: 15ch;
+      margin-bottom: .8rem;
+      font-size: clamp(2rem, 5.4vw, 4.2rem);
+      line-height: 1.02;
+      letter-spacing: -.04em;
+    }
+
+    .hero-copy {
+      max-width: 64ch;
+      margin-bottom: 0;
+      color: #d9e6ec;
+      font-size: clamp(1rem, 2vw, 1.12rem);
+    }
+
+    .hero-visual {
+      min-height: 178px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .session-diagram {
+      width: min(100%, 300px);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 20px;
+      padding: 1.15rem;
+      background: rgba(255,255,255,.07);
+      backdrop-filter: blur(4px);
+    }
+
+    .diagram-role {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .75rem;
+      margin-bottom: .8rem;
+      padding-bottom: .8rem;
+      border-bottom: 1px solid rgba(255,255,255,.16);
+      font-weight: 800;
+    }
+
+    .diagram-list { display: grid; gap: .55rem; font-size: .85rem; }
+    .diagram-item { display: flex; align-items: center; gap: .55rem; }
+    .diagram-status { width: 10px; height: 10px; flex: 0 0 auto; border-radius: 50%; background: #7de0c7; }
+    .diagram-status.flag { background: #f4b45b; }
+
+    main { padding: 1.1rem 0 3rem; }
+
+    .progress-wrap {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .progress-label, .progress-count { font-size: .84rem; font-weight: 800; }
+
+    .progress-track {
+      height: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #dce2df;
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--teal), #45aa93);
+      transition: width .35s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .progress-bar, .ghost-button, .secondary-button, .primary-button, .option-button { transition: none !important; }
+    }
+
+    .mission-card, .completion-card {
+      border: 1px solid rgba(201, 210, 211, .9);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 253, 248, .94);
+      box-shadow: var(--shadow);
+    }
+
+    .mission-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 1rem;
+      padding: clamp(1.25rem, 3vw, 2.1rem);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mission-number {
+      margin: 0 0 .45rem;
+      color: var(--teal-dark);
+      font-size: .78rem;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .mission-title {
+      margin-bottom: .45rem;
+      font-size: clamp(1.4rem, 2.8vw, 2.05rem);
+      line-height: 1.15;
+      letter-spacing: -.02em;
+    }
+
+    .mission-brief { max-width: 72ch; margin-bottom: 0; color: var(--ink-soft); }
+
+    .role-chip {
+      align-self: start;
+      border-radius: 999px;
+      padding: .45rem .8rem;
+      background: var(--amber-soft);
+      color: #744500;
+      font-size: .8rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .principle-strip {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: .8rem;
+      align-items: start;
+      margin: 1.2rem clamp(1.25rem, 3vw, 2.1rem) 0;
+      border-radius: var(--radius-md);
+      padding: 1rem 1.1rem;
+      background: var(--blue-soft);
+      color: #24435d;
+    }
+
+    .principle-icon {
+      width: 2rem;
+      height: 2rem;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--navy);
+      color: #fff;
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+
+    .principle-strip p { margin-bottom: 0; }
+
+    .item-area { padding: clamp(1.25rem, 3vw, 2.1rem); }
+
+    .item-progress {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: .9rem;
+      color: var(--ink-soft);
+      font-size: .82rem;
+      font-weight: 800;
+      letter-spacing: .03em;
+    }
+
+    .evidence-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.1rem 1.25rem;
+      margin-bottom: 1.1rem;
+      background: var(--surface);
+    }
+
+    .evidence-kind {
+      display: inline-block;
+      margin-bottom: .55rem;
+      border-radius: 999px;
+      padding: .3rem .7rem;
+      background: var(--surface-soft);
+      color: var(--teal-dark);
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .evidence-body {
+      margin: 0;
+      font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: .88rem;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      color: var(--ink);
+    }
+
+    .evidence-note { margin-top: .7rem; margin-bottom: 0; color: var(--ink-soft); font-size: .9rem; }
+
+    .item-question {
+      margin-bottom: .9rem;
+      font-size: 1.08rem;
+      font-weight: 800;
+    }
+
+    .option-list { display: grid; gap: .65rem; margin-bottom: 1rem; }
+
+    .option-button {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: .85rem 1rem;
+      background: var(--surface);
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .15s ease, background .15s ease, transform .12s ease;
+    }
+
+    .option-button:hover:not(:disabled) { border-color: var(--teal); transform: translateY(-1px); }
+
+    .option-key {
+      display: grid;
+      place-items: center;
+      width: 1.9rem;
+      height: 1.9rem;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--surface-soft);
+      color: var(--navy);
+      font-weight: 900;
+      font-size: .82rem;
+    }
+
+    .option-label { flex: 1; }
+
+    .option-button:disabled { cursor: default; }
+    .option-button.is-correct { border-color: var(--green); background: var(--green-soft); }
+    .option-button.is-correct .option-key { background: var(--green); color: #fff; }
+    .option-button.is-wrong { border-color: var(--red); background: var(--red-soft); }
+    .option-button.is-wrong .option-key { background: var(--red); color: #fff; }
+    .option-button.is-muted:disabled { opacity: .55; }
+
+    .feedback-panel {
+      display: none;
+      gap: .7rem;
+      align-items: start;
+      border-radius: var(--radius-md);
+      padding: 1rem 1.1rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .feedback-panel.show { display: flex; }
+    .feedback-panel.correct { background: var(--green-soft); color: #163f2a; }
+    .feedback-panel.incorrect { background: var(--red-soft); color: #5a2020; }
+
+    .feedback-badge {
+      flex: 0 0 auto;
+      border-radius: 50%;
+      width: 2rem;
+      height: 2rem;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .feedback-panel.correct .feedback-badge { background: var(--green); }
+    .feedback-panel.incorrect .feedback-badge { background: var(--red); }
+    .feedback-panel p { margin: 0; }
+    .feedback-panel strong { display: block; margin-bottom: .25rem; }
+
+    .item-actions { display: flex; justify-content: flex-end; }
+
+    .mission-summary { display: none; padding: clamp(1.25rem, 3vw, 2.1rem); border-top: 1px solid var(--border); }
+    .mission-summary.show { display: block; }
+
+    .summary-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .score-ring {
+      --score: 0;
+      display: grid;
+      place-items: center;
+      width: 4.6rem;
+      height: 4.6rem;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: conic-gradient(var(--teal) calc(var(--score) * 1%), var(--surface-soft) 0);
+    }
+
+    .score-ring strong {
+      display: grid;
+      place-items: center;
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 50%;
+      background: var(--surface);
+      font-size: 1rem;
+    }
+
+    .recap-list { display: grid; gap: .5rem; margin: 0 0 0; padding: 0; list-style: none; }
+
+    .recap-item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: .6rem;
+      align-items: start;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: .6rem .75rem;
+      font-size: .88rem;
+    }
+
+    .recap-mark {
+      width: 1.4rem;
+      height: 1.4rem;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 900;
+      font-size: .78rem;
+    }
+
+    .recap-item.ok .recap-mark { background: var(--green); }
+    .recap-item.bad .recap-mark { background: var(--red); }
+
+    .next-row { margin-top: 1.2rem; display: flex; justify-content: flex-end; }
+
+    .completion-card { margin-top: 1.5rem; display: none; }
+    .completion-card.show { display: block; }
+
+    .completion-hero {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(1.25rem, 3vw, 2.1rem);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .completion-hero h2 { max-width: 42ch; font-size: clamp(1.4rem, 2.6vw, 1.9rem); }
+
+    .final-score {
+      display: grid;
+      place-items: center;
+      gap: .2rem;
+      text-align: center;
+      border-radius: var(--radius-md);
+      padding: 1rem 1.5rem;
+      background: var(--navy);
+      color: #fff;
+      min-width: 10rem;
+    }
+
+    .final-score strong { font-size: 2.3rem; line-height: 1; }
+    .final-score span { font-size: .78rem; color: #cfe3df; }
+
+    .rank-pill {
+      display: inline-block;
+      margin-top: .4rem;
+      border-radius: 999px;
+      padding: .25rem .7rem;
+      font-size: .74rem;
+      font-weight: 900;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .rank-gold { background: #fff1d4; color: #7a4b00; }
+    .rank-silver { background: #e8edf0; color: #3a4954; }
+    .rank-bronze { background: #f6e3d6; color: #7a3d18; }
+
+    .completion-body {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.5rem;
+      padding: clamp(1.25rem, 3vw, 2.1rem);
+    }
+
+    .takeaway-list { display: grid; gap: .8rem; margin: 0; padding: 0; list-style: none; }
+    .takeaway-list li { display: flex; gap: .7rem; align-items: start; }
+    .takeaway-list li::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      margin-top: .5rem;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--teal);
+    }
+
+    .mission-score-list { display: grid; gap: .6rem; margin-bottom: 1rem; }
+
+    .mission-score-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: .6rem .85rem;
+      font-size: .9rem;
+    }
+
+    .completion-actions { display: flex; gap: .7rem; flex-wrap: wrap; }
+
+    .glossary {
+      margin-top: 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      background: var(--surface);
+    }
+
+    .glossary summary { cursor: pointer; font-weight: 800; }
+    .glossary dl { margin: 1rem 0 0; display: grid; gap: .7rem; }
+    .glossary dt { font-weight: 800; color: var(--navy); }
+    .glossary dd { margin: .15rem 0 0; color: var(--ink-soft); }
+
+    .site-footer {
+      margin-top: 2rem;
+      padding-bottom: 2rem;
+      color: var(--ink-soft);
+      font-size: .82rem;
+      text-align: center;
+    }
+
+    @media (max-width: 760px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+      .mission-header { grid-template-columns: 1fr; }
+      .role-chip { justify-self: start; }
+      .completion-body { grid-template-columns: 1fr; }
+      .completion-hero { flex-direction: column; align-items: flex-start; }
+    }
+
+    @media print {
+      .skip-link, .item-actions, .completion-actions, .ghost-button { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#activity">ข้ามไปยังกิจกรรม</a>
+
+  <header class="site-header shell">
+    <div class="topbar">
+      <span class="course-mark">305331 / 316331 · Computer &amp; Information Security</span>
+      <button class="ghost-button" id="printButtonTop" type="button">พิมพ์สรุป</button>
+    </div>
+
+    <section class="hero" aria-labelledby="pageTitle">
+      <div>
+        <p class="eyebrow">Interactive Session &amp; Credential Security Lab</p>
+        <h1 id="pageTitle">Authentication &amp; Session Security Simulator</h1>
+        <p class="hero-copy">
+          ตรวจสอบพฤติกรรม login/session ตัดสินความเสี่ยงของการเก็บรหัสผ่าน
+          และเลือก control รับมือ brute force ที่สมดุลกับผู้ใช้จริง
+          ในระบบ Student Project Portal จำลอง — ทั้งหมดเป็นสถานการณ์สังเคราะห์
+          ไม่มีการ login จริง ไม่มีการถอดรหัส และไม่มีการโจมตีจริงเกิดขึ้น
+        </p>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="session-diagram">
+          <div class="diagram-role"><span>Mali · session state</span><span>EVIDENCE</span></div>
+          <div class="diagram-list">
+            <div class="diagram-item"><span class="diagram-status"></span><span>Set-Cookie: HttpOnly; Secure</span></div>
+            <div class="diagram-item"><span class="diagram-status"></span><span>logout → Max-Age=0</span></div>
+            <div class="diagram-item"><span class="diagram-status flag"></span><span>cookie เดาได้ · ผิดปกติ</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </header>
+
+  <main id="activity" class="shell" tabindex="-1">
+    <div class="progress-wrap" aria-label="ความก้าวหน้าของกิจกรรม">
+      <span class="progress-label">ความก้าวหน้า</span>
+      <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0" id="progressTrack">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <span class="progress-count" id="progressCount">ภารกิจ 1/3</span>
+    </div>
+
+    <section class="mission-card" id="missionCard" aria-labelledby="missionTitle">
+      <header class="mission-header">
+        <div>
+          <p class="mission-number" id="missionNumber">Mission 01</p>
+          <h2 class="mission-title" id="missionTitle"></h2>
+          <p class="mission-brief" id="missionBrief"></p>
+        </div>
+        <span class="role-chip" id="roleChip"></span>
+      </header>
+
+      <div class="principle-strip">
+        <span class="principle-icon" aria-hidden="true">i</span>
+        <p><strong>ภารกิจ:</strong> <span id="missionGoal"></span> ใช้เมาส์คลิกหรือกดปุ่มตัวเลข <kbd>1</kbd>–<kbd>4</kbd> เพื่อเลือกคำตอบ</p>
+      </div>
+
+      <div class="item-area">
+        <div class="item-progress">
+          <span id="itemProgress">ข้อ 1/7</span>
+          <span id="itemScoreLabel">คะแนนภารกิจนี้: 0</span>
+        </div>
+
+        <div class="evidence-card">
+          <span class="evidence-kind" id="evidenceKind"></span>
+          <p class="evidence-body" id="evidenceBody"></p>
+          <p class="evidence-note" id="evidenceNote"></p>
+        </div>
+
+        <p class="item-question" id="itemQuestion"></p>
+
+        <div class="option-list" id="optionList" role="group" aria-labelledby="itemQuestion"></div>
+
+        <div class="feedback-panel" id="feedbackPanel">
+          <span class="feedback-badge" id="feedbackBadge" aria-hidden="true"></span>
+          <p><strong id="feedbackHead"></strong><span id="feedbackBody"></span></p>
+        </div>
+
+        <div class="item-actions">
+          <button class="primary-button" id="nextItemButton" type="button" disabled>ข้อถัดไป</button>
+        </div>
+      </div>
+
+      <section class="mission-summary" id="missionSummary" aria-labelledby="summaryHeading">
+        <div class="summary-head">
+          <div>
+            <h3 id="summaryHeading">สรุปผลภารกิจ</h3>
+            <p id="summarySubtitle" style="margin:0;color:var(--ink-soft)"></p>
+          </div>
+          <div class="score-ring" id="scoreRing" aria-label="คะแนนภารกิจ">
+            <strong id="missionScoreValue">0</strong>
+          </div>
+        </div>
+        <ul class="recap-list" id="recapList"></ul>
+        <div class="next-row">
+          <button class="secondary-button" id="nextMissionButton" type="button">ไปภารกิจถัดไป</button>
+        </div>
+      </section>
+    </section>
+
+    <section class="completion-card" id="completionCard" aria-labelledby="completionTitle">
+      <div class="completion-hero">
+        <div>
+          <p class="eyebrow">Simulation Complete</p>
+          <h2 id="completionTitle"></h2>
+          <span class="rank-pill" id="rankPill"></span>
+        </div>
+        <div class="final-score" aria-label="คะแนนรวม">
+          <strong id="finalScore">0</strong>
+          <span>คะแนนฝึกปฏิบัติ / 100</span>
+        </div>
+      </div>
+      <div class="completion-body">
+        <section>
+          <h3>สิ่งที่ควรนำไปใช้ต่อ</h3>
+          <ul class="takeaway-list">
+            <li><span><strong>Session ที่ปกติต้องพิสูจน์ได้ทั้ง 4 ช่วง</strong><br>ก่อน login, ตอน login, หลัง login และหลัง logout — cookie ที่ไม่มี HttpOnly/Secure หรือยังใช้ได้หลัง logout คือสัญญาณที่ต้องรายงาน</span></li>
+            <li><span><strong>Hash ที่ดีเอาชนะรหัสผ่านที่แย่ไม่ได้เสมอไป</strong><br>Argon2/bcrypt ลด offline-cracking risk ได้มาก แต่รหัสผ่านซ้ำหรือคำที่พบใน breach list ยังเสี่ยงอยู่ดี</span></li>
+            <li><span><strong>Control ต่อ brute force ต้องสมส่วน</strong><br>Lockout ที่ไวเกินไปกลายเป็นเครื่องมือ DoS ใส่ผู้ใช้จริง ส่วน rate-limit ที่หย่อนเกินไปปล่อยให้เดารหัสผ่านต่อได้เรื่อย ๆ</span></li>
+            <li><span><strong>สังเกตตาม pattern ไม่ใช่แค่ตัวเลข threshold</strong><br>Password spraying กระจายไปหลายบัญชีบัญชีละไม่กี่ครั้งจะรอดจาก threshold รายบัญชี ต้องดูที่แหล่งที่มาด้วย</span></li>
+          </ul>
+        </section>
+        <section>
+          <h3>ผลแต่ละภารกิจ</h3>
+          <div class="mission-score-list" id="missionScoreList"></div>
+          <p id="limitationNote" style="font-size:.86rem;color:var(--ink-soft)"></p>
+          <div class="completion-actions">
+            <button class="primary-button" id="retryButton" type="button">ลองใหม่</button>
+            <button class="secondary-button" id="printButton" type="button">พิมพ์สรุป</button>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <details class="glossary">
+      <summary>คำศัพท์สำคัญของกิจกรรม</summary>
+      <dl>
+        <dt>Authentication</dt>
+        <dd>กระบวนการพิสูจน์ว่าผู้ใช้เป็นใครหรือถือ credential ที่ถูกต้องหรือไม่</dd>
+        <dt>Session</dt>
+        <dd>สถานะที่ระบบจำไว้หลัง login เพื่อไม่ต้องส่ง credential ซ้ำทุก request มักอ้างอิงด้วย session cookie</dd>
+        <dt>Salt</dt>
+        <dd>ค่าสุ่มเฉพาะแต่ละบัญชีที่ผสมกับรหัสผ่านก่อน hash เพื่อกัน rainbow table และทำให้ hash ของรหัสผ่านเดียวกันไม่ซ้ำกันข้ามบัญชี</dd>
+        <dt>Work factor / memory-hard hashing</dt>
+        <dd>การออกแบบ hash ให้คำนวณช้าและ/หรือใช้หน่วยความจำมาก (เช่น bcrypt, Argon2) เพื่อให้ offline cracking ทำได้ช้าลงมาก</dd>
+        <dt>Credential stuffing</dt>
+        <dd>การใช้คู่ username/password ที่หลุดจากเว็บอื่นมาลองกับระบบเป้าหมาย โดยไม่ต้องเดาหรือ crack อะไรใหม่</dd>
+        <dt>Password spraying</dt>
+        <dd>การลองรหัสผ่านที่พบบ่อยเพียงไม่กี่ครั้งต่อบัญชี แต่กระจายไปหลายบัญชี เพื่อหลบ threshold ที่นับจากบัญชีเดียว</dd>
+        <dt>Account lockout เป็น DoS vector</dt>
+        <dd>นโยบาย lockout ที่ไวเกินไปเปิดช่องให้ผู้ไม่หวังดีล็อกบัญชีของผู้อื่นได้โดยไม่ต้องรู้รหัสผ่านจริง</dd>
+      </dl>
+    </details>
+
+    <p class="sr-only" id="liveRegion" aria-live="polite"></p>
+  </main>
+
+  <footer class="site-footer shell">
+    กิจกรรมข้อมูลสังเคราะห์สำหรับรายวิชา 305331 / 316331 · ไม่มีการ login จริง ไม่มีการถอดรหัส และไม่มีการโจมตีจริงเกิดขึ้น · ไม่มีการส่งข้อมูลออกจากอุปกรณ์
+  </footer>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const STORAGE_KEY = "authSessionLab:v1";
+      const POINTS_PER_ITEM = 5;
+
+      const missions = [
+        {
+          id: "session",
+          number: "Mission 01",
+          title: "Session ของใคร? · Login และ Session Handling",
+          role: "TOPIC · Authentication & Session",
+          brief: "สังเกตหลักฐานของ Student Project Portal ก่อน login ระหว่าง login หลัง login และหลัง logout แล้วตัดสินว่าพฤติกรรมนั้นปกติหรือเป็นสัญญาณที่ต้องรายงาน",
+          goal: "แยกแยะพฤติกรรม session ที่ถูกต้องจากสัญญาณผิดปกติในแต่ละช่วงของ authentication flow",
+          items: [
+            {
+              kind: "ก่อน login",
+              evidence: "GET /dashboard HTTP/1.1\n(ไม่มี session cookie แนบมา)\n\nHTTP/1.1 302 Found\nLocation: /login",
+              question: "Mali ยังไม่ได้ login แล้วเปิดหน้า /dashboard พฤติกรรมนี้ปกติหรือไม่?",
+              options: [
+                { label: "ปกติ — หน้าที่ต้อง login redirect ไปหน้า login ถูกต้องแล้ว", correct: true },
+                { label: "ผิดปกติ — ควรเห็นข้อมูลได้ทันทีโดยไม่ต้อง login", correct: false }
+              ],
+              rationale: "หน้าที่ต้องยืนยันตัวตนก่อน ควรปฏิเสธ request ที่ไม่มี session แล้วพาไปหน้า login เสมอ นี่คือพฤติกรรมพื้นฐานที่ถูกต้องของ authentication gate"
+            },
+            {
+              kind: "ระหว่าง login",
+              evidence: "POST /login HTTP/1.1\n(username=mali, password=[redacted])\n\nHTTP/1.1 302 Found\nSet-Cookie: session=8f2c...; HttpOnly; Secure; SameSite=Lax\nLocation: /dashboard",
+              question: "หลัง Mali login สำเร็จ ระบบตอบกลับด้วย cookie แบบนี้ ปกติหรือผิดปกติ?",
+              options: [
+                { label: "ปกติ — cookie มีทั้ง HttpOnly และ Secure ครบ", correct: true },
+                { label: "ผิดปกติ — session cookie ไม่ควรถูกส่งกลับมาเลย", correct: false }
+              ],
+              rationale: "HttpOnly กัน JavaScript ฝั่ง client อ่าน cookie (ลดผลกระทบจาก XSS) ส่วน Secure บังคับให้ส่งผ่าน HTTPS เท่านั้น การมีทั้งสอง flag คือแนวปฏิบัติที่ถูกต้อง"
+            },
+            {
+              kind: "ระหว่าง login",
+              evidence: "POST /login HTTP/1.1\n(username=dr.anan, password=[redacted])\n\nHTTP/1.1 302 Found\nSet-Cookie: session=1001\nLocation: /dashboard",
+              question: "หลัง Dr. Anan login สำเร็จ cookie ที่ได้กลับมาเป็นแบบนี้ ปกติหรือผิดปกติ?",
+              options: [
+                { label: "ผิดปกติ — cookie ไม่มี HttpOnly/Secure และค่าดูเหมือนเดาง่าย", correct: true },
+                { label: "ปกติ — login สำเร็จและได้ redirect ไปหน้า dashboard แล้ว", correct: false }
+              ],
+              rationale: "ค่า session ที่สั้นและดูเป็นเลขลำดับ (เช่น 1001) มีโอกาสถูกเดาได้ และการไม่มี HttpOnly/Secure ทำให้ token เสี่ยงต่อการถูกอ่านผ่าน script หรือดักฟังบนเครือข่ายที่ไม่เข้ารหัส — ต้องรายงานเป็นข้อบกพร่อง"
+            },
+            {
+              kind: "หลัง login",
+              evidence: "GET /dashboard HTTP/1.1\nCookie: session=8f2c...\n\nHTTP/1.1 200 OK\n(แสดงข้อมูลโครงงานของ Mali เอง)",
+              question: "Mali login แล้วเปิด /dashboard อีกครั้งด้วย session ของตนเอง เห็นข้อมูลของตนเอง ปกติหรือผิดปกติ?",
+              options: [
+                { label: "ปกติ — session ที่ถูกต้องเข้าถึงข้อมูลของเจ้าของ session ได้", correct: true },
+                { label: "ผิดปกติ — ไม่ควร cache session ไว้ใช้ซ้ำ", correct: false }
+              ],
+              rationale: "นี่คือการทำงานปกติของ session-based authentication: หลัง login ระบบจำสถานะไว้และอนุญาตให้เจ้าของ session เข้าถึงข้อมูลของตนเองได้โดยไม่ต้อง login ซ้ำทุก request"
+            },
+            {
+              kind: "หลัง login",
+              evidence: "GET /dashboard HTTP/1.1\nCookie: session=8f2d... (ค่าที่ผู้สอนสร้างให้ทดสอบ เดาต่อจากของ Mali)\n\nHTTP/1.1 200 OK\n(แสดงข้อมูลโครงงานของ Dr. Anan)",
+              question: "ผู้สอนให้ evidence pack ที่ลองเปลี่ยน session cookie เป็นค่าที่เดาใกล้เคียงของ Mali แล้วได้ข้อมูลของ Dr. Anan กลับมา ปกติหรือผิดปกติ?",
+              options: [
+                { label: "ผิดปกติ — session token เดาได้และไม่ผูกกับเจ้าของบัญชีจริง", correct: true },
+                { label: "ปกติ — เป็นแค่การทดสอบของผู้สอน ไม่ใช่ผู้ใช้จริงทำ", correct: false }
+              ],
+              rationale: "ประเด็นไม่ใช่ว่าใครเป็นคนลอง แต่คือระบบยอมรับ session token ที่เดาได้แล้วคืนข้อมูลของบัญชีอื่น — เป็นสัญญาณของ session token ที่ไม่สุ่มพอ (predictable session) ซึ่งเปิดช่องให้ session hijacking ได้จริงหากมีคนร้ายลองแบบเดียวกัน"
+            },
+            {
+              kind: "logout",
+              evidence: "POST /logout HTTP/1.1\nCookie: session=8f2c...\n\nHTTP/1.1 302 Found\nSet-Cookie: session=; Max-Age=0\nLocation: /login",
+              question: "Mali กด logout แล้วได้ผลลัพธ์นี้กลับมา ปกติหรือผิดปกติ?",
+              options: [
+                { label: "ปกติ — cookie ถูกล้างค่าและตั้ง Max-Age=0 พร้อม redirect ไปหน้า login", correct: true },
+                { label: "ผิดปกติ — ควรลบ cookie ฝั่ง client เองโดยไม่ต้องรอ server สั่ง", correct: false }
+              ],
+              rationale: "การ logout ที่ถูกต้องต้องให้ฝั่ง server สั่งล้าง cookie (Max-Age=0) และพาไปหน้า login การพึ่งฝั่ง client อย่างเดียวไม่เพียงพอ เพราะ session ฝั่ง server อาจยังไม่ถูกทำลาย"
+            },
+            {
+              kind: "logout",
+              evidence: "หลัง Dr. Anan กด logout แล้ว กดปุ่ม Back ของ browser กลับไปหน้า /grades\n\nHTTP/1.1 200 OK\n(ยังแสดงข้อมูลคะแนนเดิมที่เห็นก่อน logout)",
+              question: "หลัง logout แล้วกด Back กลับไปหน้าเดิมยังเห็นข้อมูลเก่าอยู่ ปกติหรือผิดปกติ?",
+              options: [
+                { label: "ผิดปกติ — หน้าที่ต้อง authenticate ต้อง revalidate กับ server ทุกครั้ง ไม่ควรพึ่ง cache/back button", correct: true },
+                { label: "ปกติ — browser cache หน้าไว้เฉย ๆ ไม่ใช่ปัญหาความปลอดภัย", correct: false }
+              ],
+              rationale: "ถ้าหน้า response ตอบ 200 OK จริง (ไม่ใช่แค่ browser แสดงภาพ cache ที่ไม่ revalidate) แปลว่า session ฝั่ง server อาจยังไม่ถูกทำลายจริง หรือหน้าไม่ได้ตั้งค่า cache-control ให้ปฏิเสธการเก็บข้อมูลที่ต้องยืนยันตัวตนซ้ำ ต้องตรวจสอบเพิ่มว่า session ถูก invalidate ที่ server จริงหรือไม่"
+            }
+          ]
+        },
+        {
+          id: "password",
+          number: "Mission 02",
+          title: "เก็บรหัสผ่านแบบไหนถึงปลอดภัย · Password Storage",
+          role: "TOPIC · Password Policy & Hashing",
+          brief: "ประเมินความเสี่ยงต่อ offline cracking ของวิธีเก็บรหัสผ่านแต่ละแบบใน Student Project Portal หากฐานข้อมูล hash รั่วไหลออกไป (ใช้ toy scenario เท่านั้น ไม่มีการ crack จริง)",
+          goal: "ตัดสินความเสี่ยงจากทั้ง algorithm การเก็บ (hash/salt/work factor) และความแข็งแรงของรหัสผ่านเอง ไม่ใช่อย่างใดอย่างหนึ่ง",
+          items: [
+            {
+              kind: "storage config",
+              evidence: "ตาราง users ของ Portal เก็บคอลัมน์ password เป็นข้อความล้วน\n\nchair_kanya | password = \"Kanya@2026\"",
+              question: "Portal เก็บรหัสผ่านของ Kanya เป็น plaintext ในฐานข้อมูล ความเสี่ยงเมื่อฐานข้อมูลรั่วไหลเป็นแบบใด?",
+              options: [
+                { label: "เสี่ยงสูง — ใครก็ตามที่อ่านฐานข้อมูลได้เห็นรหัสผ่านทันที ไม่ต้อง crack เลย", correct: true },
+                { label: "เสี่ยงต่ำ — ถ้า database ถูกป้องกันด้วย access control ก็ปลอดภัยพอ", correct: false }
+              ],
+              rationale: "Plaintext password คือความเสี่ยงสูงสุดเสมอ เพราะไม่ต้องอาศัยการ crack ใด ๆ — แค่ฐานข้อมูลรั่วครั้งเดียว (จาก bug, insider, backup หลุด ฯลฯ) รหัสผ่านจริงก็หลุดไปทันที"
+            },
+            {
+              kind: "storage config",
+              evidence: "users.password_hash เก็บด้วย MD5(password) โดยไม่มี salt\n\nmali | password_hash = \"e10adc3949ba59abbe56e057f20f883e\"",
+              question: "Portal เก็บ hash ด้วย MD5 ไม่มี salt สำหรับ Mali ความเสี่ยงเป็นแบบใด?",
+              options: [
+                { label: "เสี่ยงสูง — MD5 คำนวณเร็วมากและไม่มี salt ทำให้ crack ด้วย rainbow table/GPU ได้เร็ว", correct: true },
+                { label: "เสี่ยงต่ำ — MD5 เป็น cryptographic hash function จึงย้อนกลับไม่ได้อยู่แล้ว", correct: false }
+              ],
+              rationale: "MD5 ถูกออกแบบมาให้คำนวณเร็ว (เหมาะกับ checksum ไม่ใช่รหัสผ่าน) การไม่มี salt ยังเปิดช่องให้ใช้ rainbow table ที่คำนวณไว้ล่วงหน้าได้ทันที ทำให้ทั้ง GPU brute-force และ lookup table โจมตีได้เร็วมาก"
+            },
+            {
+              kind: "storage config",
+              evidence: "users.password_hash เก็บด้วย bcrypt(work factor=12) พร้อม salt เฉพาะบัญชี\n\ndr.anan | password_hash = \"$2b$12$KJ8f...\"",
+              question: "Portal เก็บ hash ด้วย bcrypt work factor 12 พร้อม salt เฉพาะบัญชีสำหรับ Dr. Anan ความเสี่ยงเป็นแบบใด?",
+              options: [
+                { label: "เสี่ยงต่ำ — bcrypt คำนวณช้าโดยตั้งใจและมี salt เฉพาะบัญชี ทำให้ offline cracking ทำได้ยากมากในทางปฏิบัติ", correct: true },
+                { label: "เสี่ยงสูง — bcrypt เป็น hash รุ่นเก่าเทียบเท่า MD5", correct: false }
+              ],
+              rationale: "bcrypt เป็น adaptive hash ที่ปรับความช้าได้ (work factor) และบังคับให้ salt ไม่ซ้ำกันในแต่ละบัญชี ทำให้ทั้ง rainbow table ใช้ไม่ได้ และการลองรหัสผ่านทีละตัวช้าลงมากจนไม่คุ้มค่าในสเกลใหญ่"
+            },
+            {
+              kind: "storage config + password",
+              evidence: "ใช้ bcrypt work factor 12 เหมือนข้อก่อนหน้า แต่ Mali ตั้งรหัสผ่านว่า \"123456\"\n\nmali | password_hash = \"$2b$12$9fH2...\"  (มาจาก \"123456\")",
+              question: "Portal ใช้ bcrypt ที่ดีเหมือนเดิม แต่ Mali ใช้รหัสผ่าน \"123456\" ความเสี่ยงเป็นแบบใด?",
+              options: [
+                { label: "เสี่ยงสูง — รหัสผ่านที่พบบ่อยที่สุดจะถูกลองก่อนในทุก wordlist แม้ hash จะช้าก็ยังถูก crack ได้ในไม่กี่ครั้งที่ลอง", correct: true },
+                { label: "เสี่ยงต่ำ — เพราะ bcrypt ทำให้ crack ช้าลงเสมอไม่ว่ารหัสผ่านจะเป็นอะไร", correct: false }
+              ],
+              rationale: "algorithm ที่ดีทำให้ 'การลองแต่ละครั้ง' ช้าลง แต่ไม่ได้เพิ่มจำนวนความเป็นไปได้ที่ผู้โจมตีต้องลอง ถ้ารหัสผ่านอยู่ใน wordlist อันดับต้น ๆ (เช่น \"123456\") ผู้โจมตีแทบไม่ต้องลองกี่ครั้งเลยก็เจอ — ความแข็งแรงของรหัสผ่านสำคัญไม่แพ้ algorithm"
+            },
+            {
+              kind: "storage config",
+              evidence: "users.password_hash เก็บด้วย SHA-256(salt + password) ทำ 1 รอบ ไม่มี work factor\n\nchair_kanya | password_hash = \"3a7bd3e2...\"",
+              question: "Portal ใช้ SHA-256 พร้อม salt แต่คำนวณแค่ 1 รอบ (ไม่มี work factor แบบ bcrypt/Argon2) ความเสี่ยงเป็นแบบใด?",
+              options: [
+                { label: "เสี่ยงสูง — SHA-256 เป็น general-purpose hash ที่คำนวณเร็วมากบน GPU แม้มี salt ก็ยังลองรหัสผ่านต่อบัญชีได้เร็ว", correct: true },
+                { label: "เสี่ยงต่ำ — การมี salt เพียงพอแล้วไม่ว่า hash function จะเป็นอะไร", correct: false }
+              ],
+              rationale: "Salt ช่วยกัน rainbow table ที่คำนวณไว้ล่วงหน้าข้ามบัญชีได้ แต่ไม่ได้ทำให้การคำนวณ hash ช้าลงเลย SHA-256 ยังถูกออกแบบมาให้เร็ว (เหมาะกับ integrity ไม่ใช่ password) ผู้โจมตีที่มี GPU ยังลอง brute-force ต่อบัญชีได้เร็วกว่า bcrypt/Argon2 มาก"
+            },
+            {
+              kind: "password reuse",
+              evidence: "Portal ใช้ Argon2id ที่ตั้งค่าอย่างดีสำหรับ Mali แต่รหัสผ่านที่เธอใช้ตรงกับรหัสผ่านที่เคยหลุดจากเว็บช้อปปิ้งอื่นเมื่อปีก่อน (พบใน public breach dataset)",
+              question: "แม้ Portal จะเก็บ hash ด้วย Argon2id อย่างดี แต่ Mali ใช้รหัสผ่านซ้ำกับเว็บที่เคยหลุด ความเสี่ยงเป็นแบบใด?",
+              options: [
+                { label: "เสี่ยงสูง — ผู้โจมตีไม่ต้อง crack hash ของ Portal เลย แค่เอารหัสผ่านที่หลุดจากที่อื่นมาลองตรง ๆ (credential stuffing)", correct: true },
+                { label: "เสี่ยงต่ำ — เพราะ Portal เองเก็บรหัสผ่านไว้อย่างปลอดภัยตามมาตรฐาน", correct: false }
+              ],
+              rationale: "ความแข็งแรงของการเก็บ hash ที่ฝั่ง Portal ไม่เกี่ยวข้องเลยกับความเสี่ยงนี้ เพราะผู้โจมตีมี plaintext password อยู่แล้วจากการรั่วไหลที่อื่น แล้วนำมาลอง login ตรง ๆ กับ Portal (credential stuffing) — นี่คือเหตุผลที่ต้องมี breach-list check และ MFA เสริม ไม่ใช่พึ่ง hashing อย่างเดียว"
+            },
+            {
+              kind: "remediation",
+              evidence: "แผนปรับปรุงที่เสนอ: เปลี่ยนจาก MD5 เป็น Argon2id (memory-hard, salt เฉพาะบัญชี, work factor ตามคำแนะนำปัจจุบัน) และเพิ่ม policy ปฏิเสธรหัสผ่านที่พบใน breach list สาธารณะตอนตั้งรหัสผ่านใหม่",
+              question: "แผนปรับปรุงนี้ลดความเสี่ยงโดยรวมได้ดีหรือไม่?",
+              options: [
+                { label: "ดี — แก้ทั้งจุดอ่อนของ algorithm (MD5→Argon2id) และจุดอ่อนของรหัสผ่านเอง (breach-list check) พร้อมกัน", correct: true },
+                { label: "ยังไม่พอ — ต้องเปลี่ยน algorithm เท่านั้นก็เพียงพอแล้ว ไม่จำเป็นต้องเช็ค breach list", correct: false }
+              ],
+              rationale: "จากข้อ 2–6 จะเห็นว่าความเสี่ยงมาจากสองมิติที่แยกกัน: (1) algorithm การเก็บ hash และ (2) ความแข็งแรง/การใช้ซ้ำของรหัสผ่านเอง แผนที่ดีต้องแก้ทั้งสองด้าน — เปลี่ยน algorithm อย่างเดียวยังเสี่ยงถ้ารหัสผ่านอ่อนหรือถูกใช้ซ้ำ"
+            }
+          ]
+        },
+        {
+          id: "bruteforce",
+          number: "Mission 03",
+          title: "ควบคุม Brute Force แบบไหนไม่ทำร้ายผู้ใช้จริง",
+          role: "TOPIC · Rate Limiting & Lockout Trade-offs",
+          brief: "เลือก control ที่สมส่วนกับ login-attempt pattern แต่ละแบบของ Student Project Portal โดยต้องกันการเดารหัสผ่านได้ แต่ไม่กลายเป็นเครื่องมือ DoS ใส่ผู้ใช้จริงเสียเอง",
+          goal: "ชั่งน้ำหนักระหว่าง security, usability และความเสี่ยงที่ control เองจะกลายเป็น denial-of-service",
+          items: [
+            {
+              kind: "attempt log",
+              evidence: "บัญชี mali ถูก login ผิด 3 ครั้งใน 2 นาที จาก IP เดียว (อุปกรณ์เดิมที่เธอใช้ประจำ)",
+              question: "ควรตอบสนองต่อ pattern นี้อย่างไร?",
+              options: [
+                { label: "แสดงข้อความแจ้งเตือนและปล่อยให้ลองใหม่ตามปกติ (อาจหน่วงเล็กน้อย)", correct: true },
+                { label: "ล็อกบัญชีทันที 24 ชั่วโมง", correct: false },
+                { label: "แจ้ง admin ฉุกเฉินทันที", correct: false }
+              ],
+              rationale: "3 ครั้งจาก IP/อุปกรณ์เดิมที่ใช้ประจำสอดคล้องกับการพิมพ์รหัสผ่านผิดเอง การ lockout ทันทีจะสร้างความรำคาญให้ผู้ใช้จริงโดยไม่ได้ประโยชน์ด้านความปลอดภัยเพิ่มมากนัก การแจ้งเตือน/หน่วงเล็กน้อยเพียงพอสำหรับระดับนี้"
+            },
+            {
+              kind: "attempt log",
+              evidence: "บัญชี dr.anan ถูก login ผิด 200 ครั้งใน 1 นาที จาก IP เดียว รหัสผ่านที่ลองเรียงตาม wordlist ทั่วไป",
+              question: "ควรตอบสนองต่อ pattern นี้อย่างไร?",
+              options: [
+                { label: "Rate-limit/หน่วงเวลาตาม IP ที่มาจากแหล่งเดียวกัน", correct: true },
+                { label: "ปล่อยผ่านตามปกติเพราะยังไม่ถือว่าเข้าระบบสำเร็จ", correct: false },
+                { label: "ปิดระบบ login ทั้งหมดชั่วคราวเพื่อความปลอดภัย", correct: false }
+              ],
+              rationale: "นี่คือ pattern brute force แบบคลาสสิกจากแหล่งเดียว — rate-limit หรือหน่วงเวลาตาม IP เป็น control ที่สมส่วน ตัดปริมาณการลองต่อเวลาลงโดยไม่กระทบผู้ใช้อื่นในระบบ การปิดระบบ login ทั้งหมดคือปฏิกิริยาเกินขนาดที่ทำร้ายผู้ใช้ทุกคน"
+            },
+            {
+              kind: "attempt log",
+              evidence: "บัญชี chair_kanya (บัญชีความเสี่ยงสูง) ถูก login ผิด 5 ครั้ง จาก 5 ประเทศต่างกันภายใน 10 นาที รหัสผ่านที่ลองตรงกับ breach list ของเว็บอื่น",
+              question: "ควรตอบสนองต่อ pattern นี้อย่างไร?",
+              options: [
+                { label: "บังคับ MFA step-up สำหรับความพยายาม login ครั้งถัดไป และแจ้งเตือนเจ้าของบัญชีทันที", correct: true },
+                { label: "รอดูเฉย ๆ เพราะ 5 ครั้งยังไม่ถึง threshold ปกติของระบบ", correct: false },
+                { label: "ล็อกบัญชีถาวรทันทีโดยไม่แจ้งใคร", correct: false }
+              ],
+              rationale: "จำนวนครั้งน้อยแต่กระจายหลายประเทศพร้อมรหัสผ่านจาก breach list คือลายเซ็นของ credential stuffing ที่ threshold แบบนับจำนวนอย่างเดียวจับไม่ได้ บัญชีความเสี่ยงสูงควรได้ step-up authentication และแจ้งเตือนทันที ส่วนการ lockout ถาวรแบบเงียบ ๆ อาจกลายเป็นการปิดกั้นเจ้าของบัญชีจริงโดยไม่รู้ตัว"
+            },
+            {
+              kind: "policy design",
+              evidence: "นโยบายที่มีอยู่: \"พิมพ์รหัสผ่านผิด 3 ครั้ง → ล็อกบัญชี 24 ชั่วโมงทันที ไม่มีทาง unlock เอง\" มีคนพิมพ์รหัสผ่านผิดใส่บัญชีของเพื่อนร่วมชั้นซ้ำ ๆ โดยไม่ได้พยายามเข้าระบบจริง",
+              question: "นโยบาย lockout แบบนี้มีปัญหาอะไรหรือไม่?",
+              options: [
+                { label: "มีปัญหา — เปิดช่องให้ใครก็ได้ล็อกบัญชีคนอื่นโดยไม่ต้องรู้รหัสผ่านเลย (lockout กลายเป็นเครื่องมือ DoS) ควรผสม CAPTCHA/delay ก่อนถึงขั้น lockout เต็มรูปแบบ", correct: true },
+                { label: "ไม่มีปัญหา — ยิ่งเข้มงวดยิ่งปลอดภัย", correct: false }
+              ],
+              rationale: "Lockout ที่ไวเกินไปและ unlock เองไม่ได้เปลี่ยนกลไกป้องกันบัญชีให้กลายเป็นอาวุธโจมตี: ผู้ไม่หวังดีแค่พิมพ์รหัสผ่านผิดใส่บัญชีเป้าหมายก็ปิดกั้นเจ้าของบัญชีจริงได้ ควรมีขั้นที่เบากว่าก่อน (delay, CAPTCHA) และเปิดทาง unlock ที่ปลอดภัย"
+            },
+            {
+              kind: "attempt log",
+              evidence: "ภายใน 1 ชั่วโมง มีความพยายาม login ผิดกระจายไปหลายบัญชี บัญชีละ 1–2 ครั้งเท่านั้น ทั้งหมดมาจาก IP เดียวกัน และรหัสผ่านที่ลองเป็นรายการรหัสผ่านยอดฮิตชุดเดียวกัน",
+              question: "ควรตอบสนองต่อ pattern นี้อย่างไร?",
+              options: [
+                { label: "Alert และ rate-limit ตาม IP ต้นทาง เพราะเป็น password-spraying pattern ไม่ใช่ตามบัญชีเดี่ยว ๆ", correct: true },
+                { label: "ไม่ต้องทำอะไรเพราะแต่ละบัญชีโดนแค่ 1–2 ครั้ง ไม่ถึง threshold ปกติ", correct: false },
+                { label: "ล็อกทุกบัญชีที่ได้รับผลกระทบทันที", correct: false }
+              ],
+              rationale: "Password spraying ถูกออกแบบมาให้หลบ threshold ที่นับจากบัญชีเดียว (เช่น 3 ครั้งต่อบัญชี) การตรวจจับต้องดูมิติของแหล่งที่มา (IP เดียว, รหัสผ่านชุดเดียวกัน, กระจายหลายบัญชี) แล้ว rate-limit/alert ที่ระดับ IP ส่วนการล็อกทุกบัญชีที่ถูกลองจะกระทบผู้ใช้จริงจำนวนมากเกินจำเป็น"
+            },
+            {
+              kind: "synthesis",
+              evidence: "สรุปหลักการจากภารกิจนี้: ต้องออกแบบชุด control สำหรับ Student Project Portal โดยรวมทั้งระบบ",
+              question: "ชุด control แบบใดสมดุลระหว่าง security, usability และความเสี่ยงที่ control เองจะกลายเป็น DoS ได้ดีที่สุด?",
+              options: [
+                { label: "ผสมผสาน progressive delay + temporary lockout ที่ unlock เองได้ + บังคับ MFA สำหรับบัญชีความเสี่ยงสูง + monitoring/alert ทั้งระดับ IP และระดับบัญชี", correct: true },
+                { label: "Lockout ถาวรทันทีทุกกรณีที่พิมพ์ผิด เพื่อความปลอดภัยสูงสุด", correct: false },
+                { label: "ไม่ใช้ control ใดเลย เพราะกลัวไปกระทบผู้ใช้จริง", correct: false }
+              ],
+              rationale: "จากทุก pattern ในภารกิจนี้ ไม่มี control เดียวที่ตอบโจทย์ทุกกรณี: delay/rate-limit จับ brute force ปริมาณสูงจากแหล่งเดียว, temporary+self-unlock lockout กันไม่ให้กลายเป็น DoS ถาวร, MFA step-up เสริมบัญชีความเสี่ยงสูง และ monitoring ทั้งสองมิติ (IP และบัญชี) จับ pattern ที่หลบ threshold เดี่ยว ๆ ได้ การใช้ control สุดโต่งด้านใดด้านหนึ่งอย่างเดียวจะพลาดอีกด้านเสมอ"
+            }
+          ]
+        }
+      ];
+
+      const state = {
+        missionIndex: 0,
+        itemIndex: 0,
+        itemLocked: false,
+        missionCorrect: 0,
+        missionResults: [],
+        allResults: []
+      };
+
+      const els = {};
+      [
+        "progressTrack", "progressBar", "progressCount",
+        "missionCard", "missionNumber", "missionTitle", "missionBrief", "roleChip", "missionGoal",
+        "itemProgress", "itemScoreLabel", "evidenceKind", "evidenceBody", "evidenceNote",
+        "itemQuestion", "optionList", "feedbackPanel", "feedbackBadge", "feedbackHead", "feedbackBody",
+        "nextItemButton", "missionSummary", "summarySubtitle", "scoreRing", "missionScoreValue", "recapList",
+        "nextMissionButton", "completionCard", "completionTitle", "rankPill", "finalScore",
+        "missionScoreList", "limitationNote", "retryButton", "printButton", "printButtonTop", "liveRegion"
+      ].forEach(id => { els[id] = document.getElementById(id); });
+
+      const totalItems = missions.reduce((sum, m) => sum + m.items.length, 0);
+
+      function announce(text) { els.liveRegion.textContent = text; }
+
+      function itemsDoneBeforeMission(index) {
+        return missions.slice(0, index).reduce((sum, m) => sum + m.items.length, 0);
+      }
+
+      function updateGlobalProgress() {
+        const done = itemsDoneBeforeMission(state.missionIndex) + state.itemIndex;
+        els.progressTrack.setAttribute("aria-valuemax", String(totalItems));
+        els.progressTrack.setAttribute("aria-valuenow", String(done));
+        els.progressBar.style.width = ((done / totalItems) * 100).toFixed(1) + "%";
+        els.progressCount.textContent = `ภารกิจ ${state.missionIndex + 1}/${missions.length}`;
+      }
+
+      function renderMissionHeader() {
+        const mission = missions[state.missionIndex];
+        els.missionNumber.textContent = mission.number;
+        els.missionTitle.textContent = mission.title;
+        els.missionBrief.textContent = mission.brief;
+        els.roleChip.textContent = mission.role;
+        els.missionGoal.textContent = mission.goal;
+      }
+
+      function renderItem() {
+        const mission = missions[state.missionIndex];
+        const item = mission.items[state.itemIndex];
+
+        state.itemLocked = false;
+        els.itemProgress.textContent = `ข้อ ${state.itemIndex + 1}/${mission.items.length}`;
+        els.itemScoreLabel.textContent = `คะแนนภารกิจนี้: ${state.missionCorrect * POINTS_PER_ITEM}`;
+        els.evidenceKind.textContent = item.kind;
+        els.evidenceBody.textContent = item.evidence;
+        els.evidenceNote.textContent = "";
+        els.itemQuestion.textContent = item.question;
+
+        els.optionList.innerHTML = "";
+        item.options.forEach((opt, i) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "option-button";
+          btn.dataset.index = String(i);
+          btn.innerHTML = `<span class="option-key">${i + 1}</span><span class="option-label"></span>`;
+          btn.querySelector(".option-label").textContent = opt.label;
+          btn.addEventListener("click", () => selectOption(i));
+          els.optionList.appendChild(btn);
+        });
+
+        els.feedbackPanel.classList.remove("show", "correct", "incorrect");
+        els.nextItemButton.disabled = true;
+        els.nextItemButton.textContent = (state.itemIndex === mission.items.length - 1) ? "ดูสรุปภารกิจ" : "ข้อถัดไป";
+
+        updateGlobalProgress();
+        announce(`${mission.number} ข้อ ${state.itemIndex + 1} จาก ${mission.items.length}`);
+      }
+
+      function selectOption(index) {
+        if (state.itemLocked) return;
+        state.itemLocked = true;
+
+        const mission = missions[state.missionIndex];
+        const item = mission.items[state.itemIndex];
+        const chosen = item.options[index];
+        const isCorrect = !!chosen.correct;
+
+        Array.from(els.optionList.children).forEach((btn, i) => {
+          btn.disabled = true;
+          if (item.options[i].correct) {
+            btn.classList.add("is-correct");
+          } else if (i === index) {
+            btn.classList.add("is-wrong");
+          } else {
+            btn.classList.add("is-muted");
+          }
+        });
+
+        els.feedbackPanel.classList.add("show", isCorrect ? "correct" : "incorrect");
+        els.feedbackBadge.textContent = isCorrect ? "✓" : "✕";
+        els.feedbackHead.textContent = isCorrect ? "ถูกต้อง" : "ยังไม่ถูกต้อง";
+        els.feedbackBody.textContent = item.rationale;
+
+        if (isCorrect) state.missionCorrect += 1;
+        els.itemScoreLabel.textContent = `คะแนนภารกิจนี้: ${state.missionCorrect * POINTS_PER_ITEM}`;
+
+        state.missionResults.push({ question: item.question, correct: isCorrect });
+        state.allResults.push({ mission: mission.title, question: item.question, correct: isCorrect });
+
+        els.nextItemButton.disabled = false;
+        els.nextItemButton.focus();
+        announce(isCorrect ? "ตอบถูกต้อง" : "ตอบยังไม่ถูกต้อง เปิดคำอธิบายแล้ว");
+      }
+
+      function handleNextItem() {
+        const mission = missions[state.missionIndex];
+        if (state.itemIndex < mission.items.length - 1) {
+          state.itemIndex += 1;
+          renderItem();
+        } else {
+          showMissionSummary();
+        }
+      }
+
+      function showMissionSummary() {
+        const mission = missions[state.missionIndex];
+        const scorePct = Math.round((state.missionCorrect / mission.items.length) * 100);
+        els.scoreRing.style.setProperty("--score", String(scorePct));
+        els.missionScoreValue.textContent = `${state.missionCorrect * POINTS_PER_ITEM}`;
+        els.summarySubtitle.textContent = `ตอบถูก ${state.missionCorrect} จาก ${mission.items.length} ข้อ`;
+
+        els.recapList.innerHTML = "";
+        state.missionResults.forEach(r => {
+          const li = document.createElement("li");
+          li.className = `recap-item ${r.correct ? "ok" : "bad"}`;
+          li.innerHTML = `<span class="recap-mark">${r.correct ? "✓" : "✕"}</span><span></span>`;
+          li.querySelector("span:last-child").textContent = r.question;
+          els.recapList.appendChild(li);
+        });
+
+        els.missionSummary.classList.add("show");
+        els.nextMissionButton.textContent = (state.missionIndex === missions.length - 1) ? "ดูผลรวมทั้งหมด" : "ไปภารกิจถัดไป";
+        els.nextMissionButton.focus();
+        announce(`สรุปภารกิจ ${mission.number}: ตอบถูก ${state.missionCorrect} จาก ${mission.items.length} ข้อ`);
+      }
+
+      function handleNextMission() {
+        const mission = missions[state.missionIndex];
+        const totalCorrectPoints = state.missionCorrect * POINTS_PER_ITEM;
+        const maxPoints = mission.items.length * POINTS_PER_ITEM;
+
+        persistMissionScore(mission.id, totalCorrectPoints, maxPoints);
+
+        if (state.missionIndex < missions.length - 1) {
+          state.missionIndex += 1;
+          state.itemIndex = 0;
+          state.missionCorrect = 0;
+          state.missionResults = [];
+          els.missionSummary.classList.remove("show");
+          renderMissionHeader();
+          renderItem();
+          els.missionCard.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          showCompletion();
+        }
+      }
+
+      function persistMissionScore(id, points, max) {
+        state[`score_${id}`] = { points, max };
+      }
+
+      function showCompletion() {
+        els.missionCard.style.display = "none";
+        els.completionCard.classList.add("show");
+
+        const totalPoints = missions.reduce((sum, m) => sum + (state[`score_${m.id}`]?.points || 0), 0);
+        const maxPoints = missions.reduce((sum, m) => sum + m.items.length * POINTS_PER_ITEM, 0);
+
+        els.finalScore.textContent = String(totalPoints);
+
+        let rank, rankClass;
+        if (totalPoints >= 90) { rank = "Gold · Session Guardian"; rankClass = "rank-gold"; }
+        else if (totalPoints >= 70) { rank = "Silver · Careful Reviewer"; rankClass = "rank-silver"; }
+        else { rank = "Bronze · ลองใหม่อีกครั้ง"; rankClass = "rank-bronze"; }
+
+        els.rankPill.textContent = rank;
+        els.rankPill.className = `rank-pill ${rankClass}`;
+        els.completionTitle.textContent = totalPoints === maxPoints
+          ? "คุณอ่านสัญญาณ session รหัสผ่าน และ brute force ได้ครบถ้วน"
+          : "คุณผ่านทั้ง 3 ภารกิจแล้ว ลองทบทวนข้อที่พลาดเพื่อความเข้าใจที่แน่นขึ้น";
+
+        els.missionScoreList.innerHTML = "";
+        missions.forEach(m => {
+          const s = state[`score_${m.id}`] || { points: 0, max: m.items.length * POINTS_PER_ITEM };
+          const row = document.createElement("div");
+          row.className = "mission-score-item";
+          row.innerHTML = `<span></span><strong></strong>`;
+          row.querySelector("span").textContent = m.title;
+          row.querySelector("strong").textContent = `${s.points}/${s.max}`;
+          els.missionScoreList.appendChild(row);
+        });
+
+        els.limitationNote.textContent = "ข้อควรระวัง: กิจกรรมนี้ฝึกการตัดสินใจจากหลักฐานสังเคราะห์เท่านั้น การผ่านกิจกรรมนี้ไม่ได้พิสูจน์ว่าระบบจริงปลอดภัย ต้องตรวจสอบ evidence จริงของระบบนั้น ๆ ก่อนสรุปเสมอ ไม่มีการ login จริง ไม่มีการถอดรหัส และไม่มีการโจมตีจริงเกิดขึ้นระหว่างทำกิจกรรมนี้";
+
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            totalPoints, maxPoints, completedAt: new Date().toISOString(),
+            missions: missions.map(m => ({ id: m.id, ...(state[`score_${m.id}`] || {}) }))
+          }));
+        } catch (e) { /* localStorage unavailable — progress simply won't persist */ }
+
+        els.completionCard.scrollIntoView({ behavior: "smooth", block: "start" });
+        announce(`ทำกิจกรรมครบแล้ว คะแนนรวม ${totalPoints} จาก ${maxPoints}`);
+      }
+
+      function resetActivity() {
+        state.missionIndex = 0;
+        state.itemIndex = 0;
+        state.itemLocked = false;
+        state.missionCorrect = 0;
+        state.missionResults = [];
+        state.allResults = [];
+        missions.forEach(m => { delete state[`score_${m.id}`]; });
+
+        els.completionCard.classList.remove("show");
+        els.missionCard.style.display = "";
+        els.missionSummary.classList.remove("show");
+        renderMissionHeader();
+        renderItem();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (els.missionSummary.classList.contains("show") || els.completionCard.classList.contains("show")) return;
+        const n = Number(e.key);
+        if (n >= 1 && n <= 4) {
+          const btn = els.optionList.children[n - 1];
+          if (btn && !btn.disabled) btn.click();
+        } else if (e.key === "Enter" && !els.nextItemButton.disabled) {
+          els.nextItemButton.click();
+        }
+      });
+
+      els.nextItemButton.addEventListener("click", handleNextItem);
+      els.nextMissionButton.addEventListener("click", handleNextMission);
+      els.retryButton.addEventListener("click", resetActivity);
+      els.printButton.addEventListener("click", () => window.print());
+      els.printButtonTop.addEventListener("click", () => window.print());
+
+      renderMissionHeader();
+      renderItem();
+    })();
+  </script>
+</body>
+</html>
