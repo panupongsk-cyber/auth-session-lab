@@ -662,7 +662,7 @@
           <div class="diagram-role"><span>Mali · session state</span><span>EVIDENCE</span></div>
           <div class="diagram-list">
             <div class="diagram-item"><span class="diagram-status"></span><span>Set-Cookie: HttpOnly; Secure</span></div>
-            <div class="diagram-item"><span class="diagram-status"></span><span>logout → Max-Age=0</span></div>
+            <div class="diagram-item"><span class="diagram-status"></span><span>logout → expire cookie + reject prior session</span></div>
             <div class="diagram-item"><span class="diagram-status flag"></span><span>cookie เดาได้ · ผิดปกติ</span></div>
           </div>
         </div>
@@ -753,7 +753,7 @@
         <section>
           <h3>สิ่งที่ควรนำไปใช้ต่อ</h3>
           <ul class="takeaway-list">
-            <li><span><strong>Session ที่ปกติต้องพิสูจน์ได้ทั้ง 4 ช่วง</strong><br>ก่อน login, ตอน login, หลัง login และหลัง logout — cookie ที่ไม่มี HttpOnly/Secure หรือยังใช้ได้หลัง logout คือสัญญาณที่ต้องรายงาน</span></li>
+            <li><span><strong>Session ที่ปกติต้องพิสูจน์ได้ทั้ง 4 ช่วง</strong><br>ก่อน login, ตอน login, หลัง login และหลัง logout — หลัง logout ต้องทำให้ cookie หมดอายุ และมีหลักฐานว่า server ไม่รับ session เดิมแล้ว; cookie ที่ไม่มี HttpOnly/Secure หรือยังใช้ได้หลัง logout คือสัญญาณที่ต้องรายงาน</span></li>
             <li><span><strong>Hash ที่ดีเอาชนะรหัสผ่านที่แย่ไม่ได้เสมอไป</strong><br>Argon2/bcrypt ลด offline-cracking risk ได้มาก แต่รหัสผ่านซ้ำหรือคำที่พบใน breach list ยังเสี่ยงอยู่ดี</span></li>
             <li><span><strong>Control ต่อ brute force ต้องสมส่วน</strong><br>Lockout ที่ไวเกินไปกลายเป็นเครื่องมือ DoS ใส่ผู้ใช้จริง ส่วน rate-limit ที่หย่อนเกินไปปล่อยให้เดารหัสผ่านต่อได้เรื่อย ๆ</span></li>
             <li><span><strong>สังเกตตาม pattern ไม่ใช่แค่ตัวเลข threshold</strong><br>Password spraying กระจายไปหลายบัญชีบัญชีละไม่กี่ครั้งจะรอดจาก threshold รายบัญชี ต้องดูที่แหล่งที่มาด้วย</span></li>
@@ -867,12 +867,13 @@
             {
               kind: "logout",
               evidence: "POST /logout HTTP/1.1\nCookie: session=8f2c...\n\nHTTP/1.1 302 Found\nSet-Cookie: session=; Max-Age=0\nLocation: /login",
-              question: "Mali กด logout แล้วได้ผลลัพธ์นี้กลับมา ปกติหรือผิดปกติ?",
+              question: "หลักฐานนี้พอจะสรุปว่า logout ยุติ session เดิมครบถ้วนหรือไม่?",
               options: [
-                { label: "ปกติ — cookie ถูกล้างค่าและตั้ง Max-Age=0 พร้อม redirect ไปหน้า login", correct: true },
+                { label: "หลักฐานยังไม่พอ — response แสดงเพียงว่า browser ถูกสั่งให้หมดอายุ cookie; ยังต้องมีหลักฐานว่า server จะไม่รับ session เดิมแล้ว เช่น invalidation/revocation หรือการตรวจซ้ำแบบสังเคราะห์", correct: true },
+                { label: "ปกติ — cookie ถูกล้างค่าและตั้ง Max-Age=0 พร้อม redirect ไปหน้า login จึงพิสูจน์ว่า session ฝั่ง server ถูกยกเลิกแล้ว", correct: false },
                 { label: "ผิดปกติ — ควรลบ cookie ฝั่ง client เองโดยไม่ต้องรอ server สั่ง", correct: false }
               ],
-              rationale: "การ logout ที่ถูกต้องต้องให้ฝั่ง server สั่งล้าง cookie (Max-Age=0) และพาไปหน้า login การพึ่งฝั่ง client อย่างเดียวไม่เพียงพอ เพราะ session ฝั่ง server อาจยังไม่ถูกทำลาย"
+              rationale: "Max-Age=0 เป็นหลักฐานเรื่อง cookie ที่ browser เก็บอยู่ ไม่ใช่หลักฐานว่า session/token ฝั่ง server ถูก invalidate หรือ revoke แล้ว การ logout ที่ปลอดภัยต้องอธิบายว่าความต่อเนื่องใดถูกตัด และต้องมีหลักฐานว่าค่าเดิมใช้กับ server ต่อไม่ได้"
             },
             {
               kind: "logout",
